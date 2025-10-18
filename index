@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Triangle Solver</title>
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #77b6ea 0%, #f4f7fc 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(60, 110, 150, 0.18);
+            padding: 35px 32px 28px 32px;
+            max-width: 387px;
+            width: 100%;
+            margin: 12px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 18px;
+            color: #3498db;
+            letter-spacing: 1px;
+        }
+        label, select {
+            display: block;
+            margin: 12px 0 7px 0;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px 7px;
+            border: 1px solid #dde1e6;
+            border-radius: 7px;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            transition: border-color 0.18s;
+        }
+        select:focus, input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px 0;
+            background: linear-gradient(90deg, #3498db, #71d1b2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.08rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);
+            margin-top: 10px;
+            transition: background 0.2s, transform 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #2980b9, #4ea89c);
+            transform: scale(1.03);
+        }
+        .result {
+            background: #ecf6fc;
+            border-radius: 7px;
+            margin-top: 24px;
+            font-size: 1.05rem;
+            padding: 17px;
+            color: #222;
+            box-shadow: 0 1px 4px rgba(130,170,210,0.07);
+        }
+        .result strong {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Triangle Sides & Angles Solver</h2>
+        <form id="triangleForm">
+            <label>Known Values:
+                <select id="knownType" onchange="updateInputs()">
+                    <option value="SSS">3 Sides</option>
+                    <option value="SAS">2 Sides + Included Angle</option>
+                    <option value="ASA">2 Angles + Side</option>
+                    <option value="AAS">2 Angles + Side</option>
+                </select>
+            </label>
+            <div id="inputs"></div>
+            <button type="button" onclick="solveTriangle()">Solve Triangle</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+<script>
+function updateInputs() {
+    const inputsDiv = document.getElementById('inputs');
+    const knownType = document.getElementById('knownType').value;
+    let html = "";
+
+    if (knownType === "SSS") {
+        html += '<label>Side a:<input type="number" id="a" min="0" step="any" placeholder="Enter side a"></label>';
+        html += '<label>Side b:<input type="number" id="b" min="0" step="any" placeholder="Enter side b"></label>';
+        html += '<label>Side c:<input type="number" id="c" min="0" step="any" placeholder="Enter side c"></label>';
+    } else if (knownType === "SAS") {
+        html += '<label>Side a:<input type="number" id="a" min="0" step="any" placeholder="Enter side a"></label>';
+        html += '<label>Side b:<input type="number" id="b" min="0" step="any" placeholder="Enter side b"></label>';
+        html += '<label>Included angle C (°):<input type="number" id="C" min="0" max="180" step="any" placeholder="Angle C in degrees"></label>';
+    } else if (knownType === "ASA" || knownType === "AAS") {
+        html += '<label>Angle A (°):<input type="number" id="A" min="0" max="180" step="any" placeholder="Angle A in degrees"></label>';
+        html += '<label>Angle B (°):<input type="number" id="B" min="0" max="180" step="any" placeholder="Angle B in degrees"></label>';
+        html += '<label>Side a:<input type="number" id="a" min="0" step="any" placeholder="Enter side a"></label>';
+    }
+    inputsDiv.innerHTML = html;
+}
+updateInputs();
+
+function solveTriangle() {
+    const knownType = document.getElementById('knownType').value;
+    let a, b, c, A, B, C, area, output = "";
+
+    if (knownType === "SSS") {
+        a = parseFloat(document.getElementById('a').value);
+        b = parseFloat(document.getElementById('b').value);
+        c = parseFloat(document.getElementById('c').value);
+
+        if (!(a && b && c && a + b > c && b + c > a && c + a > b)) {
+            output = "Please enter valid positive side lengths that can form a triangle.";
+        } else {
+            A = Math.acos((b*b + c*c - a*a) / (2*b*c)) * 180 / Math.PI;
+            B = Math.acos((a*a + c*c - b*b) / (2*a*c)) * 180 / Math.PI;
+            C = Math.acos((a*a + b*b - c*c) / (2*a*b)) * 180 / Math.PI;
+            const s = (a + b + c)/2;
+            area = Math.sqrt(s * (s-a) * (s-b) * (s-c));
+            output += <strong>Sides:</strong> a: ${a}, b: ${b}, c: ${c}<br>;
+            output += <strong>Angles:</strong> A: ${A.toFixed(2)}°, B: ${B.toFixed(2)}°, C: ${C.toFixed(2)}°<br>;
+            output += <strong>Area:</strong> ${area.toFixed(2)};
+        }
+    } else if (knownType === "SAS") {
+        a = parseFloat(document.getElementById('a').value);
+        b = parseFloat(document.getElementById('b').value);
+        C = parseFloat(document.getElementById('C').value);
+
+        if (!(a && b && C && C > 0 && C < 180)) {
+            output = "Enter two positive sides and a valid angle (0° < C < 180°).";
+        } else {
+            c = Math.sqrt(a*a + b*b - 2*a*b*Math.cos(C*Math.PI/180));
+            A = Math.asin(a * Math.sin(C*Math.PI/180) / c) * 180 / Math.PI;
+            B = 180 - C - A;
+            area = 0.5 * a * b * Math.sin(C*Math.PI/180);
+            output += <strong>Sides:</strong> a: ${a}, b: ${b}, c: ${c.toFixed(2)}<br>;
+            output += <strong>Angles:</strong> A: ${A.toFixed(2)}°, B: ${B.toFixed(2)}°, C: ${C}°<br>;
+            output += <strong>Area:</strong> ${area.toFixed(2)};
+        }
+    } else if (knownType === "ASA" || knownType === "AAS") {
+        A = parseFloat(document.getElementById('A').value);
+        B = parseFloat(document.getElementById('B').value);
+        a = parseFloat(document.getElementById('a').value);
+        C = 180 - A - B;
+        if (!(A && B && a && A > 0 && B > 0 && C > 0)) {
+            output = "Enter two angles (each > 0°, total < 180°) and a positive side.";
+        } else {
+            b = a * Math.sin(B*Math.PI/180) / Math.sin(A*Math.PI/180);
+            c = a * Math.sin(C*Math.PI/180) / Math.sin(A*Math.PI/180);
+            area = 0.5 * a * b * Math.sin(C*Math.PI/180);
+            output += <strong>Sides:</strong> a: ${a}, b: ${b.toFixed(2)}, c: ${c.toFixed(2)}<br>;
+            output += <strong>Angles:</strong> A: ${A}°, B: ${B}°, C: ${C.toFixed(2)}°<br>;
+            output += <strong>Area:</strong> ${area.toFixed(2)};
+        }
+    }
+    document.getElementById('result').innerHTML = output;
+}
+</script>
+</body>
+</html>
